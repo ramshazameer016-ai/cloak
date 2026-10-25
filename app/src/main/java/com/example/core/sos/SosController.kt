@@ -1,0 +1,266 @@
+package com.example.core.sos
+
+import android.content.Context
+import android.util.Log
+import com.example.core.location.LocationProvider
+import com.example.core.telephony.SmsDispatchResult
+import com.example.core.telephony.SmsDispatcher
+import com.example.data.network.SupabaseConfig
+import com.example.data.network.SupabaseSosRepository
+import com.example.data.repository.ContactRepository
+import com.example.service.SosForegroundService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.util.UUID
+
+/**
+ * Centralized, idempotent SOS state controller.
+ * Coordinates Duress PIN and Shake-to-SOS triggers, dispatches emergency SMS,
+ * initiates foreground audio chunking and location logging in Supabase,
+ * and maintains location tracking updates every ~2 minutes.
+ */
+class SosController(
+  private val context: Context,
+  private val contactRepository: ContactRepository,
+  private val smsDispatcher: SmsDispatcher,
+  private val locationProvider: LocationProvider,
+  private val supabaseRepo: SupabaseSosRepository = SupabaseSosRepository(context),
+  private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+) {
+  companion object {
+    private const val TAG = "SosController"
+    const val UPDATE_INTERVAL_MS = 120_000L // 2 minutes
+  }
+
+  private val _state = MutableStateFlow<SosState>(SosState.Idle)
+  val state: StateFlow<SosState> = _state.asStateFlow()
+
+  private var periodicUpdateJob: Job? = null
+
+  val isSosActive: Boolean
+    get() = _state.value is SosState.Active
+
+  fun updateAudioRecordingStatus(status: String) {
+    val current = _state.value
+    if (current is SosState.Active) {
+      _state.value = current.copy(audioRecordingStatus = status)
+    }
+  }
+
+  fun updateChunkUploadStatus(status: String) {
+    val current = _state.value
+    if (current is SosState.Active) {
+      _state.value = current.copy(chunkUploadStatus = status)
+    }
+  }
+
+  /**
+   * Starts SOS session idempotently.
+   * If already active, preserves the existing session and does not duplicate alerts.
+   */
+  fun startSos(triggerSource: String) {
+    if (_state.value is SosState.Active) {
+      Log.d(TAG, "startSos called while SOS is already active. Preserving existing session.")
+      return
+    }
+
+    val sessionId = UUID.randomUUID().toString()
+    val token = SosForegroundService.generateAccessToken()
+    val startTime = System.currentTimeMillis()
+    val audioListenUrl = SupabaseConfig.getPlaybackUrl(context, sessionId, token)
+
+    _state.value = SosState.Active(
+      sessionId = sessionId,
+      triggerSource = triggerSource,
+      startTimeMs = startTime,
+      accessToken = token,
+      audioAccessUrl = audioListenUrl,
+      statusMessage = "Initiating emergency dispatch via $triggerSource",
+      contactStatuses = emptyList(),
+      audioRecordingStatus = "Starting recording",
+      chunkUploadStatus = "Idle",
+      hasLocationPermission = locationProvider.hasLocationPermission(),
+      hasSmsPermission = smsDispatcher.hasSmsPermission()
+    )
+
+    // 1. Launch Foreground Service for continuous audio chunking & notifications
+    try {
+      SosForegroundService.startService(context, sessionId, token)
+    } catch (e: Exception) {
+      Log.w(TAG, "Foreground service start warning: ${e.message}")
+    }
+
+    scope.launch {
+      val contacts = contactRepository.getContactsSync()
+      val initialContacts = contacts.take(3).map {
+        ContactSmsStatus(
+          name = it.name.ifBlank { it.phoneNumber },
+          phoneNumber = it.phoneNumber,
+          deliveryStatus = if (!smsDispatcher.hasSmsPermission()) "Waiting for permission" else "Getting location"
+        )
+      }
+      val s = _state.value
+      if (s is SosState.Active && s.sessionId == sessionId) {
+        _state.value = s.copy(contactStatuses = initialContacts)
+      }
+
+      // 2. Record session metadata in Supabase
+      supabaseRepo.recordSession(sessionId, triggerSource)
+
+      // 3. Initial location acquisition: Last known first, then fresh fix
+      var location = locationProvider.getLastKnownLocation()
+      if (location == null) {
+        location = locationProvider.getFreshLocation()
+      }
+
+      val mapsUrl = location?.let {
+        locationProvider.formatGoogleMapsUrl(it.latitude, it.longitude)
+      }
+
+      // Record initial coordinates in Supabase
+      location?.let {
+        supabaseRepo.recordLocation(sessionId, it.latitude, it.longitude, it.accuracy)
+      }
+
+      // Update state with initial coordinates
+      val currentState = _state.value
+      if (currentState is SosState.Active && currentState.sessionId == sessionId) {
+        val sendingContacts = currentState.contactStatuses.map {
+          it.copy(deliveryStatus = if (currentState.hasSmsPermission) "Sending SMS" else "Waiting for permission")
+        }
+        _state.value = currentState.copy(
+          lastMapsUrl = mapsUrl,
+          lastLatitude = location?.latitude,
+          lastLongitude = location?.longitude,
+          locationTimestampMs = if (location != null) System.currentTimeMillis() else null,
+          contactStatuses = sendingContacts,
+          statusMessage = "Acquired initial location. Sending SMS..."
+        )
+      }
+
+            // 4. Dispatch each initial emergency SMS exactly once.
+      // dispatchEmergencySmsDetailed() performs the actual SMS submission.
+      val detailedResults =
+        smsDispatcher.dispatchEmergencySmsDetailed(
+          contacts = contacts,
+          mapsUrl = mapsUrl,
+          audioAccessUrl = audioListenUrl,
+          isUpdate = false
+        )
+
+      val updatedContacts = if (contacts.isEmpty()) {
+        emptyList()
+      } else if (!smsDispatcher.hasSmsPermission()) {
+        contacts.take(3).map {
+          ContactSmsStatus(
+            name = it.name.ifBlank { it.phoneNumber },
+            phoneNumber = it.phoneNumber,
+            deliveryStatus = "Waiting for permission"
+          )
+        }
+      } else {
+        detailedResults.map {
+          ContactSmsStatus(
+            name = it.contactName,
+            phoneNumber = it.phoneNumber,
+            deliveryStatus = it.status
+          )
+        }
+      }
+
+      val outcomeMsg = when {
+        contacts.isEmpty() ->
+          "No contacts in Support Circle"
+
+        !smsDispatcher.hasSmsPermission() ->
+          "SMS permission denied"
+
+        detailedResults.any { it.status == "SMS submitted" } ->
+          "Emergency SMS submitted to ${
+            detailedResults.count { it.status == "SMS submitted" }
+          } contact(s)"
+
+        else ->
+          "SMS submission failed. Check the SIM card and mobile network."
+      }
+
+      val afterSmsState = _state.value
+      if (afterSmsState is SosState.Active &&
+          afterSmsState.sessionId == sessionId
+      ) {
+        _state.value = afterSmsState.copy(
+          statusMessage = outcomeMsg,
+          contactStatuses = updatedContacts
+        )
+      }
+      // 5. Start periodic ~2-minute location updater
+      startPeriodicUpdates(sessionId)
+    }
+  }
+
+  private fun startPeriodicUpdates(sessionId: String) {
+    periodicUpdateJob?.cancel()
+    periodicUpdateJob = scope.launch {
+      var count = 0
+      while (isSosActive) {
+        delay(UPDATE_INTERVAL_MS)
+        val current = _state.value
+        if (current !is SosState.Active || current.sessionId != sessionId) break
+
+        count++
+        val freshLocation = locationProvider.getFreshLocation()
+        val mapsUrl = freshLocation?.let {
+          locationProvider.formatGoogleMapsUrl(it.latitude, it.longitude)
+        }
+
+        freshLocation?.let {
+          supabaseRepo.recordLocation(sessionId, it.latitude, it.longitude, it.accuracy)
+        }
+
+        val contacts = contactRepository.getContactsSync()
+        val detailedResults = smsDispatcher.dispatchEmergencySmsDetailed(
+          contacts = contacts,
+          mapsUrl = mapsUrl,
+          audioAccessUrl = current.audioAccessUrl,
+          isUpdate = true
+        )
+        val updatedContacts = if (detailedResults.isNotEmpty()) {
+          detailedResults.map { ContactSmsStatus(it.contactName, it.phoneNumber, it.status) }
+        } else {
+          current.contactStatuses
+        }
+
+        _state.value = current.copy(
+          lastMapsUrl = mapsUrl ?: current.lastMapsUrl,
+          lastLatitude = freshLocation?.latitude ?: current.lastLatitude,
+          lastLongitude = freshLocation?.longitude ?: current.lastLongitude,
+          locationTimestampMs = if (freshLocation != null) System.currentTimeMillis() else current.locationTimestampMs,
+          contactStatuses = updatedContacts,
+          updateCount = count,
+          statusMessage = "Periodic update #$count sent"
+        )
+      }
+    }
+  }
+
+  /**
+   * Stops the active SOS session. Called exclusively by Normal PIN entry.
+   */
+  fun stopSos() {
+    periodicUpdateJob?.cancel()
+    periodicUpdateJob = null
+    _state.value = SosState.Idle
+    try {
+      SosForegroundService.stopService(context)
+    } catch (e: Exception) {
+      Log.w(TAG, "Foreground service stop warning: ${e.message}")
+    }
+    Log.d(TAG, "SOS session stopped successfully.")
+  }
+}

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cloak Emergency Audio Portal</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --border-color: #30363d;
+      --text-main: #f0f6fc;
+      --text-muted: #8b949e;
+      --danger: #f85149;
+      --success: #3fb950;
+      --warning: #d29922;
+      --accent: #58a6ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge-sos {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(248, 81, 73, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(248, 81, 73, 0.4);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--danger);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(248, 81, 73, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(248, 81, 73, 0); }
+    }
+
+    .title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .session-info {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      word-break: break-all;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .player-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .status-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    audio {
+      width: 100%;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #0d1117;
+    }
+
+    .btn-secondary {
+      background-color: #21262d;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .list-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .list-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .chunk-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .chunk-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .chunk-item.active {
+      border-color: var(--accent);
+      background: rgba(88, 166, 255, 0.1);
+    }
+
+    .chunk-item .name {
+      font-weight: 600;
+    }
+
+    .chunk-item .status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-card">
+      <div class="header-top">
+        <h1 class="title">Cloak Guardian</h1>
+        <div class="badge-sos">
+          <div class="pulse-dot"></div>
+          LIVE SOS AUDIO
+        </div>
+      </div>
+      <div class="session-info" id="sessionLabel">Session: Loading...</div>
+    </div>
+
+    <div class="player-card">
+      <div class="status-text" id="playerStatus">Connecting to secure stream...</div>
+      <audio id="audioPlayer" controls preload="auto"></audio>
+      <div class="controls-row">
+        <button class="btn btn-primary" id="btnAutoPlay">Continuous Play: ON</button>
+        <button class="btn btn-secondary" id="btnRefresh">Refresh Now</button>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <div class="list-title">
+        <span>Audio Chunks</span>
+        <span id="chunkCount">0 recorded</span>
+      </div>
+      <div class="chunk-list" id="chunkContainer">
+        <div class="empty-msg">Waiting for incoming audio chunks from device...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id') || urlParams.get('sessionId') || '';
+    const token = urlParams.get('token') || '';
+    const supabaseUrl = (urlParams.get('supabase_url') || 'https://uppnyyztbgntvxddzqbo.supabase.co').replace(/\/+$/, '');
+    const anonKey = urlParams.get('apikey') || 'sb_publishable_KL_66tjyRQ1P2bhvStUTaA_A6tY-54D';
+
+    const sessionLabel = document.getElementById('sessionLabel');
+    const playerStatus = document.getElementById('playerStatus');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const chunkContainer = document.getElementById('chunkContainer');
+    const chunkCount = document.getElementById('chunkCount');
+    const btnAutoPlay = document.getElementById('btnAutoPlay');
+    const btnRefresh = document.getElementById('btnRefresh');
+
+    let recordings = [];
+    let currentPlayingIndex = -1;
+    let autoPlayEnabled = true;
+    let pollInterval = null;
+
+    sessionLabel.textContent = sessionId ? `Session: ${sessionId}` : 'Error: Missing session ID in URL';
+
+    btnAutoPlay.addEventListener('click', () => {
+      autoPlayEnabled = !autoPlayEnabled;
+      btnAutoPlay.textContent = `Continuous Play: ${autoPlayEnabled ? 'ON' : 'OFF'}`;
+      btnAutoPlay.className = autoPlayEnabled ? 'btn btn-primary' : 'btn btn-secondary';
+    });
+
+    btnRefresh.addEventListener('click', fetchChunks);
+
+    audioPlayer.addEventListener('ended', () => {
+      if (autoPlayEnabled && currentPlayingIndex + 1 < recordings.length) {
+        playChunk(currentPlayingIndex + 1);
+      } else if (autoPlayEnabled) {
+        playerStatus.textContent = 'Waiting for next live audio chunk...';
+      }
+    });
+
+    async function fetchChunks() {
+      if (!sessionId || !token) {
+        playerStatus.textContent = 'Unauthorized: session_id or token missing from link';
+        playerStatus.style.color = '#f85149';
+        return;
+      }
+
+      const listenUrl = `${supabaseUrl}/functions/v1/cloak-sos-access/listen?session_id=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(token)}`;
+
+      try {
+        const response = await fetch(listenUrl, {
+          method: 'GET',
+          headers: {
+            'apikey': anonKey
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.code || response.status}`);
+        }
+
+        const data = await response.json();
+        const incoming = data.recordings || [];
+
+        if (incoming.length !== recordings.length) {
+          const wasEmpty = recordings.length === 0;
+          recordings = incoming;
+          renderChunkList();
+
+          if (wasEmpty && autoPlayEnabled && recordings.length > 0) {
+            playChunk(0);
+          } else if (currentPlayingIndex === -1 && autoPlayEnabled && recordings.length > 0) {
+            playChunk(0);
+          }
+        }
+
+        if (recordings.length > 0 && currentPlayingIndex >= 0) {
+          playerStatus.textContent = `Playing chunk ${currentPlayingIndex + 1} of ${recordings.length}`;
+        } else if (recordings.length > 0) {
+          playerStatus.textContent = `${recordings.length} audio chunks ready`;
+        } else {
+          playerStatus.textContent = 'Listening: Waiting for first 5-second audio chunk...';
+        }
+
+        const nextPoll = (data.refresh_after_seconds || 5) * 1000;
+        schedulePoll(nextPoll);
+
+      } catch (err) {
+        playerStatus.textContent = `Connection issue: ${err.message}. Retrying...`;
+        schedulePoll(5000);
+      }
+    }
+
+    function schedulePoll(delayMs) {
+      if (pollInterval) clearTimeout(pollInterval);
+      pollInterval = setTimeout(fetchChunks, delayMs);
+    }
+
+    function playChunk(index) {
+      if (index < 0 || index >= recordings.length) return;
+      currentPlayingIndex = index;
+      renderChunkList();
+
+      const item = recordings[index];
+      playerStatus.textContent = `Playing chunk ${index + 1} of ${recordings.length}...`;
+      audioPlayer.src = item.url;
+      audioPlayer.play().catch(e => {
+        playerStatus.textContent = `Click Play to start listening (autoplay restricted by browser)`;
+      });
+    }
+
+    function renderChunkList() {
+      chunkCount.textContent = `${recordings.length} chunk${recordings.length === 1 ? '' : 's'}`;
+
+      if (recordings.length === 0) {
+        chunkContainer.innerHTML = '<div class="empty-msg">Waiting for incoming audio chunks from device...</div>';
+        return;
+      }
+
+      chunkContainer.innerHTML = '';
+      recordings.forEach((chunk, idx) => {
+        const div = document.createElement('div');
+        div.className = `chunk-item ${idx === currentPlayingIndex ? 'active' : ''}`;
+        div.onclick = () => playChunk(idx);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'name';
+        nameSpan.textContent = `Audio Part #${idx + 1} (${chunk.name})`;
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'status';
+        statusSpan.textContent = idx === currentPlayingIndex ? 'Playing' : 'Ready';
+
+        div.appendChild(nameSpan);
+        div.appendChild(statusSpan);
+        chunkContainer.appendChild(div);
+      });
+    }
+
+    // Start listening immediately
+    fetchChunks();
+  </script>
+</body>
+</html>
