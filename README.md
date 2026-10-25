@@ -55,33 +55,17 @@ The application has been built using Kotlin and Jetpack Compose. Its SOS workflo
 
 ## Screenshots
 
-The following screenshots demonstrate the application's interface and key workflows.
+![Home Screen](screenshots/01-home-screen.jpeg)
 
-### 1. Home Screen
-
-![Cloak Home Screen](screenshots/01-home-screen.jpeg)
-
-### 2. SOS Setup
-
-![SOS Setup Screen](screenshots/02-sos-setup.jpeg)
-
-### 3. Emergency SMS
+![SOS Setup](screenshots/02-sos-setup.jpeg)
 
 ![Emergency SMS](screenshots/03-emergency-sms.jpeg)
 
-### 4. Remote Audio Player
-
 ![Remote Audio Player](screenshots/04-audio-player.jpeg)
 
-### 5. Active SOS Workflow
+![Active SOS](screenshots/05-sos-active.jpeg)
 
-![Active SOS Screen](screenshots/05-sos-active.jpeg)
-
-### 6. Photo Sanitization
-
-![Photo Sanitization Screen](screenshots/06-photo-sanitization.jpeg)
-
-### 7. Digital Wellbeing Controls
+![Photo Sanitization](screenshots/06-photo-sanitization.jpeg)
 
 ![Digital Wellbeing Controls](screenshots/07-digital-wellbeing-controls.jpeg)
 
