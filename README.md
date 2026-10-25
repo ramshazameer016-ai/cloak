@@ -55,17 +55,13 @@ The application has been built using Kotlin and Jetpack Compose. Its SOS workflo
 
 ## Screenshots
 
-| Home Screen | SOS Setup | Emergency SMS |
-|---|---|---|
-| <img src="screenshots/01-home-screen.jpeg" width="180" alt="Home Screen" /> | <img src="screenshots/02-sos-setup.jpeg" width="180" alt="SOS Setup" /> | <img src="screenshots/03-emergency-sms.jpeg" width="180" alt="Emergency SMS" /> |
+| Home Screen | SOS Setup | Emergency SMS | Audio Player |
+|---|---|---|---|
+| <img src="screenshots/01-home-screen.jpeg" width="150" alt="Home Screen" /> | <img src="screenshots/02-sos-setup.jpeg" width="150" alt="SOS Setup" /> | <img src="screenshots/03-emergency-sms.jpeg" width="150" alt="Emergency SMS" /> | <img src="screenshots/04-audio-player.jpeg" width="150" alt="Audio Player" /> |
 
-| Audio Player | Active SOS | Photo Sanitization |
+| Active SOS | Photo Sanitization | Digital Wellbeing Controls |
 |---|---|---|
-| <img src="screenshots/04-audio-player.jpeg" width="180" alt="Audio Player" /> | <img src="screenshots/05-sos-active.jpeg" width="180" alt="Active SOS" /> | <img src="screenshots/06-photo-sanitization.jpeg" width="180" alt="Photo Sanitization" /> |
-
-| Digital Wellbeing Controls | | |
-|---|---|---|
-| <img src="screenshots/07-digital-wellbeing-controls.jpeg" width="180" alt="Digital Wellbeing Controls" /> | | |
+| <img src="screenshots/05-sos-active.jpeg" width="150" alt="Active SOS" /> | <img src="screenshots/06-photo-sanitization.jpeg" width="150" alt="Photo Sanitization" /> | <img src="screenshots/07-digital-wellbeing-controls.jpeg" width="150" alt="Digital Wellbeing Controls" /> |
 
 ## Project Structure
 
