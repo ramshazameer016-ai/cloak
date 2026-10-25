@@ -55,20 +55,21 @@ The application has been built using Kotlin and Jetpack Compose. Its SOS workflo
 
 ## Screenshots
 
-![Home Screen](screenshots/01-home-screen.jpeg)
+| Home Screen | SOS Setup |
+|---|---|
+| <img src="screenshots/01-home-screen.jpeg" width="220" alt="Cloak home screen" /> | <img src="screenshots/02-sos-setup.jpeg" width="220" alt="SOS setup screen" /> |
 
-![SOS Setup](screenshots/02-sos-setup.jpeg)
+| Emergency SMS | Audio Player |
+|---|---|
+| <img src="screenshots/03-emergency-sms.jpeg" width="220" alt="Emergency SMS screen" /> | <img src="screenshots/04-audio-player.jpeg" width="220" alt="Remote audio player" /> |
 
-![Emergency SMS](screenshots/03-emergency-sms.jpeg)
+| Active SOS | Photo Sanitization |
+|---|---|
+| <img src="screenshots/05-sos-active.jpeg" width="220" alt="Active SOS screen" /> | <img src="screenshots/06-photo-sanitization.jpeg" width="220" alt="Photo sanitization screen" /> |
 
-![Remote Audio Player](screenshots/04-audio-player.jpeg)
-
-![Active SOS](screenshots/05-sos-active.jpeg)
-
-![Photo Sanitization](screenshots/06-photo-sanitization.jpeg)
-
-![Digital Wellbeing Controls](screenshots/07-digital-wellbeing-controls.jpeg)
-
+| Digital Wellbeing Controls |
+|---|
+| <img src="screenshots/07-digital-wellbeing-controls.jpeg" width="220" alt="Digital wellbeing controls" /> |
 ## Project Structure
 
 The main Android application follows a typical Kotlin and Jetpack Compose project layout.
