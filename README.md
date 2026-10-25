@@ -55,21 +55,18 @@ The application has been built using Kotlin and Jetpack Compose. Its SOS workflo
 
 ## Screenshots
 
-| Home Screen | SOS Setup |
-|---|---|
-| <img src="screenshots/01-home-screen.jpeg" width="220" alt="Cloak home screen" /> | <img src="screenshots/02-sos-setup.jpeg" width="220" alt="SOS setup screen" /> |
+| Home Screen | SOS Setup | Emergency SMS |
+|---|---|---|
+| <img src="screenshots/01-home-screen.jpeg" width="180" alt="Home Screen" /> | <img src="screenshots/02-sos-setup.jpeg" width="180" alt="SOS Setup" /> | <img src="screenshots/03-emergency-sms.jpeg" width="180" alt="Emergency SMS" /> |
 
-| Emergency SMS | Audio Player |
-|---|---|
-| <img src="screenshots/03-emergency-sms.jpeg" width="220" alt="Emergency SMS screen" /> | <img src="screenshots/04-audio-player.jpeg" width="220" alt="Remote audio player" /> |
+| Audio Player | Active SOS | Photo Sanitization |
+|---|---|---|
+| <img src="screenshots/04-audio-player.jpeg" width="180" alt="Audio Player" /> | <img src="screenshots/05-sos-active.jpeg" width="180" alt="Active SOS" /> | <img src="screenshots/06-photo-sanitization.jpeg" width="180" alt="Photo Sanitization" /> |
 
-| Active SOS | Photo Sanitization |
-|---|---|
-| <img src="screenshots/05-sos-active.jpeg" width="220" alt="Active SOS screen" /> | <img src="screenshots/06-photo-sanitization.jpeg" width="220" alt="Photo sanitization screen" /> |
+| Digital Wellbeing Controls | | |
+|---|---|---|
+| <img src="screenshots/07-digital-wellbeing-controls.jpeg" width="180" alt="Digital Wellbeing Controls" /> | | |
 
-| Digital Wellbeing Controls |
-|---|
-| <img src="screenshots/07-digital-wellbeing-controls.jpeg" width="220" alt="Digital wellbeing controls" /> |
 ## Project Structure
 
 The main Android application follows a typical Kotlin and Jetpack Compose project layout.
