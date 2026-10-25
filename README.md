@@ -55,13 +55,34 @@ The application has been built using Kotlin and Jetpack Compose. Its SOS workflo
 
 ## Screenshots
 
-| Home Screen | SOS Setup | Emergency SMS | Audio Player |
-|---|---|---|---|
-| <img src="screenshots/01-home-screen.jpeg" width="150" alt="Home Screen" /> | <img src="screenshots/02-sos-setup.jpeg" width="150" alt="SOS Setup" /> | <img src="screenshots/03-emergency-sms.jpeg" width="150" alt="Emergency SMS" /> | <img src="screenshots/04-audio-player.jpeg" width="150" alt="Audio Player" /> |
-
-| Active SOS | Photo Sanitization | Digital Wellbeing Controls |
-|---|---|---|
-| <img src="screenshots/05-sos-active.jpeg" width="150" alt="Active SOS" /> | <img src="screenshots/06-photo-sanitization.jpeg" width="150" alt="Photo Sanitization" /> | <img src="screenshots/07-digital-wellbeing-controls.jpeg" width="150" alt="Digital Wellbeing Controls" /> |
+<table>
+  <tr>
+    <td align="center"><strong>Home Screen</strong></td>
+    <td align="center"><strong>SOS Setup</strong></td>
+    <td align="center"><strong>Emergency SMS</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/01-home-screen.jpeg" width="220" alt="Cloak Home Screen" /></td>
+    <td align="center"><img src="screenshots/02-sos-setup.jpeg" width="220" alt="SOS Setup" /></td>
+    <td align="center"><img src="screenshots/03-emergency-sms.jpeg" width="220" alt="Emergency SMS" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Audio Player</strong></td>
+    <td align="center"><strong>Active SOS</strong></td>
+    <td align="center"><strong>Photo Sanitization</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/04-audio-player.jpeg" width="220" alt="Remote Audio Player" /></td>
+    <td align="center"><img src="screenshots/05-sos-active.jpeg" width="220" alt="Active SOS" /></td>
+    <td align="center"><img src="screenshots/06-photo-sanitization.jpeg" width="220" alt="Photo Sanitization" /></td>
+  </tr>
+  <tr>
+    <td colspan="3" align="center"><strong>Digital Wellbeing Controls</strong></td>
+  </tr>
+  <tr>
+    <td colspan="3" align="center"><img src="screenshots/07-digital-wellbeing-controls.jpeg" width="220" alt="Digital Wellbeing Controls" /></td>
+  </tr>
+</table>
 
 ## Project Structure
 
